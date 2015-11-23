@@ -40,8 +40,10 @@ class MemcachedOutputTest < Test::Unit::TestCase
     d = create_driver
     time = Time.parse('2011-01-02 13:14:15 UTC').to_i
     d.emit('a 1', time)
+    d.emit(%w(b 2), time)
     d.run
 
     assert_equal '1', d.instance.memcached.get('a')
+    assert_equal '2', d.instance.memcached.get('b')
   end
 end
