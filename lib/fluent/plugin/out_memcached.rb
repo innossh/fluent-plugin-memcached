@@ -15,7 +15,7 @@ class Fluent::MemcachedOutput < Fluent::BufferedOutput
 
   def start
     super
-    @memcached = Dalli::Client.new("#{host}:#{port}")
+    @memcached = Dalli::Client.new("#{@host}:#{@port}")
   end
 
   def shutdown
