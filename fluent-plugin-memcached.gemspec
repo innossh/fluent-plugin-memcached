@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |gem|
   gem.name          = "fluent-plugin-memcached"
-  gem.version       = "0.0.1"
+  gem.version       = "0.0.2"
   gem.authors       = ["innossh"]
   gem.email         = ["innossh@users.noreply.github.com"]
 
