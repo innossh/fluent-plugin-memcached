@@ -31,19 +31,22 @@ class MemcachedOutputTest < Test::Unit::TestCase
   def test_format
     d = create_driver
     time = Time.parse('2011-01-02 13:14:15 UTC').to_i
-    d.emit('a 1', time)
-    d.expect_format(['test', time, 'a 1'].to_msgpack)
+    record = { 'key' => 'key', 'value1' => 'value' }
+    d.emit(record, time)
+    d.expect_format(['test', time, record].to_msgpack)
     d.run
   end
 
   def test_write
     d = create_driver
     time = Time.parse('2011-01-02 13:14:15 UTC').to_i
-    d.emit('a 1', time)
-    d.emit(%w(b 2), time)
+    record1 = { 'key' => 'a', 'value1' => '1' }
+    record2 = { 'key' => 'b', 'value1' => '2', 'value2' => '3' }
+    d.emit(record1, time)
+    d.emit(record2, time)
     d.run
 
     assert_equal '1', d.instance.memcached.get('a')
-    assert_equal '2', d.instance.memcached.get('b')
+    assert_equal '2 3', d.instance.memcached.get('b')
   end
 end

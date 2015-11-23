@@ -27,10 +27,9 @@ class Fluent::MemcachedOutput < Fluent::BufferedOutput
   end
 
   def write(chunk)
-    chunk.msgpack_each { |tag, time, data|
-      array = data.kind_of?(Array) ? data : data.split(' ');
-      key = array.first
-      value = array.drop(1).join(' ')
+    chunk.msgpack_each { |tag, time, record|
+      key = record.values.first
+      value = record.values.drop(1).join(' ')
       @memcached.set key, value
     }
   end
