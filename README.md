@@ -23,6 +23,18 @@ Default values would look like this:
 </match>
 ```
 
+To save json, like this:
+
+```
+<match dummy>
+  type memcached
+  host localhost
+  port 11211
+  value_format json
+  param_names param1,param2
+</match>
+```
+
 ## Contributing
 
 Bug reports and pull requests are welcome.
