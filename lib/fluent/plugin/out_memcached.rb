@@ -4,6 +4,7 @@ class Fluent::MemcachedOutput < Fluent::BufferedOutput
   config_param :host, :string, :default => 'localhost'
   config_param :port, :integer, :default => 11211
 
+  config_param :value_separater, :string, :default => ' '
   config_param :value_format, :string, :default => 'raw'
   config_param :param_names, :string, :default => nil # nil doesn't allowed for json
 
@@ -20,7 +21,7 @@ class Fluent::MemcachedOutput < Fluent::BufferedOutput
     if @value_format == 'json' and @param_names.nil?
       raise Fluent::ConfigError, "param_names MUST be specified in the case of json format"
     end
-    @formatter = RecordValueFormatter.new(@value_format, @param_names)
+    @formatter = RecordValueFormatter.new(@value_separater, @value_format, @param_names)
   end
 
   def start
@@ -43,10 +44,12 @@ class Fluent::MemcachedOutput < Fluent::BufferedOutput
   end
 
   class RecordValueFormatter
+    attr_reader :value_separater
     attr_reader :value_format
     attr_reader :param_names
 
-    def initialize(value_format, param_names)
+    def initialize(value_separater, value_format, param_names)
+      @value_separater = value_separater
       @value_format = value_format
       @param_names = param_names
     end
@@ -65,7 +68,7 @@ class Fluent::MemcachedOutput < Fluent::BufferedOutput
           }
           hash.to_json
         else
-          record.values.drop(1).join(' ')
+          record.values.drop(1).join(@value_separater)
       end
     end
   end
