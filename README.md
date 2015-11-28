@@ -20,6 +20,7 @@ Default values would look like this:
   type memcached
   host localhost
   port 11211
+  # value_separater " "
 </match>
 ```
 
