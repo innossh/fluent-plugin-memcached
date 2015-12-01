@@ -19,6 +19,12 @@ class MemcachedOutputTest < Test::Unit::TestCase
     param_names param1,param2
   ]
 
+  CONFIG_INCREMENT = %[
+    host 127.0.0.1
+    port 11211
+    increment true
+  ]
+
   CONFIG_MYSQL = %[
     host 127.0.0.1
     port 11211
@@ -33,6 +39,7 @@ class MemcachedOutputTest < Test::Unit::TestCase
     d = create_driver('')
     assert_equal 'localhost', d.instance.host
     assert_equal 11211, d.instance.port
+    assert_equal false, d.instance.increment
     assert_equal ' ', d.instance.value_separater
 
     d = create_driver
@@ -52,6 +59,11 @@ class MemcachedOutputTest < Test::Unit::TestCase
         value_format json
       ]
     }
+
+    d = create_driver(CONFIG_INCREMENT)
+    assert_equal '127.0.0.1', d.instance.host
+    assert_equal 11211, d.instance.port
+    assert_equal true, d.instance.increment
 
     d = create_driver(CONFIG_MYSQL)
     assert_equal '127.0.0.1', d.instance.host
@@ -94,6 +106,23 @@ class MemcachedOutputTest < Test::Unit::TestCase
 
     assert_equal record1_value_json, d.instance.memcached.get('c')
     assert_equal record2_value_json, d.instance.memcached.get('d')
+  end
+
+  def test_write_increment
+    d = create_driver(CONFIG_INCREMENT)
+    time = Time.parse('2011-01-02 13:14:15 UTC').to_i
+    record1 = {'key' => 'count1', 'param1' => 1}
+    record2 = {'key' => 'count2', 'param1' => 2}
+    record3 = {'key' => 'count1', 'param1' => 3}
+    record4 = {'key' => 'count2', 'param1' => 4}
+    d.emit(record1, time)
+    d.emit(record2, time)
+    d.emit(record3, time)
+    d.emit(record4, time)
+    d.run
+
+    assert_equal (1 + 3), d.instance.memcached.get('count1').to_i
+    assert_equal (2 + 4), d.instance.memcached.get('count2').to_i
   end
 
   def test_write_to_mysql

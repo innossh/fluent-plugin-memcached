@@ -4,7 +4,9 @@ class Fluent::MemcachedOutput < Fluent::BufferedOutput
   config_param :host, :string, :default => 'localhost'
   config_param :port, :integer, :default => 11211
 
+  config_param :increment, :bool, :default => false
   config_param :value_separater, :string, :default => ' '
+
   config_param :value_format, :string, :default => 'raw'
   config_param :param_names, :string, :default => nil # nil doesn't allowed for json
 
@@ -21,7 +23,7 @@ class Fluent::MemcachedOutput < Fluent::BufferedOutput
     if @value_format == 'json' and @param_names.nil?
       raise Fluent::ConfigError, "param_names MUST be specified in the case of json format"
     end
-    @formatter = RecordValueFormatter.new(@value_separater, @value_format, @param_names)
+    @formatter = RecordValueFormatter.new(@increment, @value_separater, @value_format, @param_names)
   end
 
   def start
@@ -39,16 +41,29 @@ class Fluent::MemcachedOutput < Fluent::BufferedOutput
 
   def write(chunk)
     chunk.msgpack_each { |tag, time, record|
-      @memcached.set @formatter.key(record), @formatter.value(record)
+      key = @formatter.key(record)
+      value = @formatter.value(record)
+      if @increment
+        if @memcached.get(key) == nil
+          # initialize increment value
+          @memcached.incr(key, 1, nil, 0)
+        end
+        @memcached.incr(key, amt=value)
+
+      else
+        @memcached.set(key, value)
+      end
     }
   end
 
   class RecordValueFormatter
+    attr_reader :increment
     attr_reader :value_separater
     attr_reader :value_format
     attr_reader :param_names
 
-    def initialize(value_separater, value_format, param_names)
+    def initialize(increment, value_separater, value_format, param_names)
+      @increment = increment
       @value_separater = value_separater
       @value_format = value_format
       @param_names = param_names
@@ -59,16 +74,18 @@ class Fluent::MemcachedOutput < Fluent::BufferedOutput
     end
 
     def value(record)
+      values = record.values.drop(1)
       case @value_format
         when 'json'
-          values = record.values.drop(1)
           hash = {}
           @param_names.split(/\s*,\s*/).each_with_index { |param_name, i|
             hash[param_name] = (i > values.size - 1) ? nil : values[i]
           }
           hash.to_json
         else
-          record.values.drop(1).join(@value_separater)
+          return values.first.to_i if @increment
+
+          values.join(@value_separater)
       end
     end
   end
