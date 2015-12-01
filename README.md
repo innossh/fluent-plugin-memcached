@@ -20,11 +20,12 @@ Default values would look like this:
   type memcached
   host localhost
   port 11211
+  increment false
   # value_separater " "
 </match>
 ```
 
-To save json, like this:
+To store values as json, like this:
 
 ```
 <match dummy>
