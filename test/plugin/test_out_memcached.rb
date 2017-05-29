@@ -115,22 +115,28 @@ class MemcachedOutputTest < Test::Unit::TestCase
     assert_equal record2_value_json, d.instance.memcached.get('d')
   end
 
-  def test_write_increment
-    d = create_driver(CONFIG_INCREMENT)
-    time = event_time('2011-01-02 13:14:15 UTC')
-    record1 = {'key' => 'count1', 'param1' => 1}
-    record2 = {'key' => 'count2', 'param1' => 2}
-    record3 = {'key' => 'count1', 'param1' => 3}
-    record4 = {'key' => 'count2', 'param1' => 4}
-    d.run(default_tag: 'test') do
-      d.feed(time, record1)
-      d.feed(time, record2)
-      d.feed(time, record3)
-      d.feed(time, record4)
+  class IncrementTest < self
+    def teardown
+      @d.instance.memcached.flush_all
     end
 
-    assert_equal (1 + 3), d.instance.memcached.get('count1').to_i
-    assert_equal (2 + 4), d.instance.memcached.get('count2').to_i
+    def test_write_increment
+      @d = create_driver(CONFIG_INCREMENT)
+      time = event_time('2011-01-02 13:14:15 UTC')
+      record1 = {'key' => 'count1', 'param1' => 1}
+      record2 = {'key' => 'count2', 'param1' => 2}
+      record3 = {'key' => 'count1', 'param1' => 3}
+      record4 = {'key' => 'count2', 'param1' => 4}
+      @d.run(default_tag: 'test') do
+        @d.feed(time, record1)
+        @d.feed(time, record2)
+        @d.feed(time, record3)
+        @d.feed(time, record4)
+      end
+
+      assert_equal (1 + 3), @d.instance.memcached.get('count1').to_i
+      assert_equal (2 + 4), @d.instance.memcached.get('count2').to_i
+    end
   end
 
   def test_write_to_mysql
