@@ -1,3 +1,4 @@
+require 'dalli'
 require 'fluent/plugin/output'
 
 class Fluent::Plugin::MemcachedOutput < Fluent::Plugin::Output
@@ -17,7 +18,6 @@ class Fluent::Plugin::MemcachedOutput < Fluent::Plugin::Output
 
   def initialize
     super
-    require 'dalli'
   end
 
   def configure(conf)
