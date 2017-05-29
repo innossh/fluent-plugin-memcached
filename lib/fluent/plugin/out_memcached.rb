@@ -16,10 +16,6 @@ class Fluent::Plugin::MemcachedOutput < Fluent::Plugin::Output
   attr_accessor :memcached
   attr_accessor :formatter
 
-  def initialize
-    super
-  end
-
   def configure(conf)
     super
     if @value_format == 'json' and @param_names.nil?
