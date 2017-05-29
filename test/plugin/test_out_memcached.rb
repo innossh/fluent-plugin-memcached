@@ -1,8 +1,12 @@
 require 'test/unit'
 require 'fluent/test'
+require 'fluent/test/helpers'
+require 'fluent/test/driver/output'
 require 'fluent/plugin/out_memcached'
 
 class MemcachedOutputTest < Test::Unit::TestCase
+  include Fluent::Test::Helpers
+
   def setup
     Fluent::Test.setup
   end
@@ -31,8 +35,8 @@ class MemcachedOutputTest < Test::Unit::TestCase
     value_separater |
   ]
 
-  def create_driver(conf = CONFIG, tag='test')
-    Fluent::Test::BufferedOutputTestDriver.new(Fluent::MemcachedOutput, tag).configure(conf)
+  def create_driver(conf = CONFIG)
+    Fluent::Test::Driver::Output.new(Fluent::Plugin::MemcachedOutput).configure(conf)
   end
 
   def test_configure
@@ -75,19 +79,21 @@ class MemcachedOutputTest < Test::Unit::TestCase
     d = create_driver
     time = Time.parse('2011-01-02 13:14:15 UTC').to_i
     record = {'key' => 'key', 'param1' => 'value'}
-    d.emit(record, time)
-    d.expect_format(['test', time, record].to_msgpack)
-    d.run
+    d.run(default_tag: 'test') do
+      d.feed(time, record)
+    end
+    assert_equal [['test', time, record].to_msgpack], d.formatted
   end
 
   def test_write
     d = create_driver
-    time = Time.parse('2011-01-02 13:14:15 UTC').to_i
+    time = event_time('2011-01-02 13:14:15 UTC')
     record1 = {'key' => 'a', 'param1' => '1'}
     record2 = {'key' => 'b', 'param1' => '2', 'param2' => '3'}
-    d.emit(record1, time)
-    d.emit(record2, time)
-    d.run
+    d.run(default_tag: 'test') do
+      d.feed(time, record1)
+      d.feed(time, record2)
+    end
 
     assert_equal '1', d.instance.memcached.get('a')
     assert_equal '2 3', d.instance.memcached.get('b')
@@ -95,14 +101,15 @@ class MemcachedOutputTest < Test::Unit::TestCase
 
   def test_write_json
     d = create_driver(CONFIG_JSON)
-    time = Time.parse('2011-01-02 13:14:15 UTC').to_i
+    time = event_time('2011-01-02 13:14:15 UTC')
     record1 = {'key' => 'c', 'param1' => '4'}
     record2 = {'key' => 'd', 'param1' => '5', 'param2' => '6'}
     record1_value_json = {'param1' => '4', 'param2' => nil}.to_json
     record2_value_json = {'param1' => '5', 'param2' => '6'}.to_json
-    d.emit(record1, time)
-    d.emit(record2, time)
-    d.run
+    d.run(default_tag: 'test') do
+      d.feed(time, record1)
+      d.feed(time, record2)
+    end
 
     assert_equal record1_value_json, d.instance.memcached.get('c')
     assert_equal record2_value_json, d.instance.memcached.get('d')
@@ -110,16 +117,17 @@ class MemcachedOutputTest < Test::Unit::TestCase
 
   def test_write_increment
     d = create_driver(CONFIG_INCREMENT)
-    time = Time.parse('2011-01-02 13:14:15 UTC').to_i
+    time = event_time('2011-01-02 13:14:15 UTC')
     record1 = {'key' => 'count1', 'param1' => 1}
     record2 = {'key' => 'count2', 'param1' => 2}
     record3 = {'key' => 'count1', 'param1' => 3}
     record4 = {'key' => 'count2', 'param1' => 4}
-    d.emit(record1, time)
-    d.emit(record2, time)
-    d.emit(record3, time)
-    d.emit(record4, time)
-    d.run
+    d.run(default_tag: 'test') do
+      d.feed(time, record1)
+      d.feed(time, record2)
+      d.feed(time, record3)
+      d.feed(time, record4)
+    end
 
     assert_equal (1 + 3), d.instance.memcached.get('count1').to_i
     assert_equal (2 + 4), d.instance.memcached.get('count2').to_i
@@ -127,10 +135,11 @@ class MemcachedOutputTest < Test::Unit::TestCase
 
   def test_write_to_mysql
     d = create_driver(CONFIG_MYSQL)
-    time = Time.parse('2011-01-02 13:14:15 UTC').to_i
+    time = event_time('2011-01-02 13:14:15 UTC')
     record = {'key' => time, 'metrics_name' => 'count', 'metrics_value' => '100'}
-    d.emit(record, time)
-    d.run
+    d.run(default_tag: 'test') do
+      d.feed(time, record)
+    end
 
     assert_equal 'count|100', d.instance.memcached.get(time)
   end
