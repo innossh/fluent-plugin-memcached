@@ -4,6 +4,10 @@ require 'fluent/plugin/output'
 class Fluent::Plugin::MemcachedOutput < Fluent::Plugin::Output
   Fluent::Plugin.register_output('memcached', self)
 
+  helpers :compat_parameters
+
+  DEFAULT_BUFFER_TYPE = "memory"
+
   config_param :host, :string, :default => 'localhost'
   config_param :port, :integer, :default => 11211
 
@@ -13,15 +17,22 @@ class Fluent::Plugin::MemcachedOutput < Fluent::Plugin::Output
   config_param :value_format, :string, :default => 'raw'
   config_param :param_names, :string, :default => nil # nil doesn't allowed for json
 
+  config_section :buffer do
+    config_set_default :@type, DEFAULT_BUFFER_TYPE
+    config_set_default :chunk_keys, ['tag']
+  end
+
   attr_accessor :memcached
   attr_accessor :formatter
 
   def configure(conf)
+    compat_parameters_convert(conf, :buffer)
     super
     if @value_format == 'json' and @param_names.nil?
       raise Fluent::ConfigError, "param_names MUST be specified in the case of json format"
     end
     @formatter = RecordValueFormatter.new(@increment, @value_separater, @value_format, @param_names)
+    raise Fluent::ConfigError, "'tag' in chunk_keys is required." unless @chunk_key_tag
   end
 
   def start
@@ -35,7 +46,7 @@ class Fluent::Plugin::MemcachedOutput < Fluent::Plugin::Output
   end
 
   def format(tag, time, record)
-    [tag, time, record].to_msgpack
+    [time, record].to_msgpack
   end
 
   def formatted_to_msgpack_binary?
@@ -47,7 +58,7 @@ class Fluent::Plugin::MemcachedOutput < Fluent::Plugin::Output
   end
 
   def write(chunk)
-    chunk.msgpack_each { |tag, time, record|
+    chunk.msgpack_each { |time, record|
       key = @formatter.key(record)
       value = @formatter.value(record)
       if @increment
