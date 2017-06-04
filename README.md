@@ -1,6 +1,7 @@
 # Fluent::Plugin::Memcached, a plugin for [Fluentd](http://www.fluentd.org)
 
 [![Build Status](https://travis-ci.org/innossh/fluent-plugin-memcached.svg?branch=master)](https://travis-ci.org/innossh/fluent-plugin-memcached)
+[![Gem Version](https://badge.fury.io/rb/fluent-plugin-memcached.svg)](https://badge.fury.io/rb/fluent-plugin-memcached)
 
 Send your logs to Memcached.
 
