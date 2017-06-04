@@ -17,7 +17,7 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
 
-  gem.add_runtime_dependency "fluentd"
+  gem.add_runtime_dependency "fluentd", [">= 0.14.15", "< 2"]
   gem.add_runtime_dependency "dalli"
   gem.add_development_dependency "rake"
   gem.add_development_dependency "test-unit"

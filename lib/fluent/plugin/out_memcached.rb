@@ -1,4 +1,7 @@
-class Fluent::MemcachedOutput < Fluent::BufferedOutput
+require 'dalli'
+require 'fluent/plugin/output'
+
+class Fluent::Plugin::MemcachedOutput < Fluent::Plugin::Output
   Fluent::Plugin.register_output('memcached', self)
 
   config_param :host, :string, :default => 'localhost'
@@ -12,11 +15,6 @@ class Fluent::MemcachedOutput < Fluent::BufferedOutput
 
   attr_accessor :memcached
   attr_accessor :formatter
-
-  def initialize
-    super
-    require 'dalli'
-  end
 
   def configure(conf)
     super
@@ -33,10 +31,19 @@ class Fluent::MemcachedOutput < Fluent::BufferedOutput
 
   def shutdown
     @memcached.close
+    super
   end
 
   def format(tag, time, record)
     [tag, time, record].to_msgpack
+  end
+
+  def formatted_to_msgpack_binary?
+    true
+  end
+
+  def multi_workers_ready?
+    true
   end
 
   def write(chunk)
