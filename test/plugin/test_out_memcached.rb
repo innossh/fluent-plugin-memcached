@@ -75,22 +75,6 @@ class MemcachedOutputTest < Test::Unit::TestCase
     assert_equal '|', d.instance.value_separater
   end
 
-  test 'lack of tag in chunk_keys' do
-    assert_raise_message(/'tag' in chunk_keys is required./) do
-      create_driver(Fluent::Config::Element.new(
-                      'ROOT', '', {
-                        '@type' => 'memcached',
-                        'host' => 'localhost',
-                        'port' => 11211,
-                      }, [
-                        Fluent::Config::Element.new('buffer', 'mykey', {
-                                                      'chunk_keys' => 'mykey'
-                                                    }, [])
-                      ]
-                    ))
-    end
-  end
-
   def test_format
     d = create_driver
     time = Time.parse('2011-01-02 13:14:15 UTC').to_i

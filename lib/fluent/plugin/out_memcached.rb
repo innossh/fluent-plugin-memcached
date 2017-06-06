@@ -19,7 +19,6 @@ class Fluent::Plugin::MemcachedOutput < Fluent::Plugin::Output
 
   config_section :buffer do
     config_set_default :@type, DEFAULT_BUFFER_TYPE
-    config_set_default :chunk_keys, ['tag']
   end
 
   attr_accessor :memcached
@@ -32,7 +31,6 @@ class Fluent::Plugin::MemcachedOutput < Fluent::Plugin::Output
       raise Fluent::ConfigError, "param_names MUST be specified in the case of json format"
     end
     @formatter = RecordValueFormatter.new(@increment, @value_separater, @value_format, @param_names)
-    raise Fluent::ConfigError, "'tag' in chunk_keys is required." unless @chunk_key_tag
   end
 
   def start
