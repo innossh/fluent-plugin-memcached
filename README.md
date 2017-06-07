@@ -27,7 +27,7 @@ Default values would look like this:
 
 ```
 <match dummy>
-  type memcached
+  @type memcached
   host localhost
   port 11211
   increment false
@@ -39,7 +39,7 @@ To store values as json, like this:
 
 ```
 <match dummy>
-  type memcached
+  @type memcached
   host localhost
   port 11211
   value_format json
@@ -55,7 +55,7 @@ When using v0.14 style configuration, you can choose three different type of buf
 
 ```
 <match dummy>
-  type memcached
+  @type memcached
   host localhost
   port 11211
   increment false
@@ -70,7 +70,7 @@ When using v0.14 style configuration, you can choose three different type of buf
 
 ```
 <match dummy>
-  type memcached
+  @type memcached
   host localhost
   port 11211
   increment false
@@ -85,7 +85,7 @@ When using v0.14 style configuration, you can choose three different type of buf
 
 ```
 <match dummy>
-  type memcached
+  @type memcached
   host localhost
   port 11211
   increment false
