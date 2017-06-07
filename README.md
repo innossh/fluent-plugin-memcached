@@ -5,6 +5,13 @@
 
 Send your logs to Memcached.
 
+## Requirements
+
+| fluent-plugin-memcached | fluentd | ruby |
+|------------------------|---------|------|
+| >= 0.1.0 | >= v0.14.0 | >= 2.1 |
+|  < 0.1.0 | >= v0.12.0 | >= 1.9 |
+
 ## Installation
 
 ```sh
