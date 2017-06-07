@@ -82,7 +82,7 @@ class MemcachedOutputTest < Test::Unit::TestCase
     d.run(default_tag: 'test') do
       d.feed(time, record)
     end
-    assert_equal [['test', time, record].to_msgpack], d.formatted
+    assert_equal [[time, record].to_msgpack], d.formatted
   end
 
   def test_write
