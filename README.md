@@ -20,7 +20,7 @@ $ gem install fluent-plugin-memcached
 
 ## Configuration
 
-NOTE: The version 0.2.0 includes breaking changes for configuration.
+**NOTE: The version 0.2.0 includes breaking changes for configuration.** Please see [here](#for-previous-versions) if you use v0.1.1 or earlier.
 
 In your Fluentd configuration, use `@type memcached`.
 
@@ -145,7 +145,7 @@ When using v0.14 style configuration, you can choose three different types of bu
 
 ### For previous versions
 
-In 0.1.2 or earlier, to store a data as JSON, like this:
+In v0.1.1 or earlier, to store a data as JSON, like this:
 
 ```
 <match dummy>
