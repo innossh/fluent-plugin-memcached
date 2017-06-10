@@ -16,21 +16,21 @@ class MemcachedOutputTest < Test::Unit::TestCase
   end
 
   CONFIG = %[
-    key name
-    fields param1,param2
+    key id
+    fields field1,field2
   ]
 
   CONFIG_JSON = %[
-    key name
+    key id
     include_key true
     format json
     include_tag_key true
   ]
 
   CONFIG_INCREMENT = %[
-    key name
+    key id
     format single_value
-    message_key param_incr
+    message_key field_incr
     increment true
   ]
 
@@ -55,8 +55,8 @@ class MemcachedOutputTest < Test::Unit::TestCase
     assert_equal 11211, @d.instance.port
     assert_equal false, @d.instance.increment
     assert_equal ' ', @d.instance.formatter.delimiter
-    assert_equal 'name', @d.instance.key
-    assert_equal ['param1', 'param2'], @d.instance.formatter.fields
+    assert_equal 'id', @d.instance.key
+    assert_equal ['field1', 'field2'], @d.instance.formatter.fields
 
     d = create_driver(CONFIG_JSON)
     assert_equal 'json', d.instance.formatter_configs.first[:@type]
@@ -64,7 +64,7 @@ class MemcachedOutputTest < Test::Unit::TestCase
     d = create_driver(CONFIG_INCREMENT)
     assert_equal true, d.instance.increment
     assert_equal 'single_value', d.instance.formatter_configs.first[:@type]
-    assert_equal 'param_incr', d.instance.formatter.message_key
+    assert_equal 'field_incr', d.instance.formatter.message_key
 
     d = create_driver(CONFIG_MYSQL)
     assert_equal 'time', d.instance.key
@@ -75,7 +75,7 @@ class MemcachedOutputTest < Test::Unit::TestCase
   end
 
   def test_format
-    record = {'name' => 'key', 'param1' => 'value1', 'param2' => 'value2'}
+    record = {'id' => 'key', 'field1' => 'value1', 'field2' => 'value2'}
     @d.run(default_tag: 'test') do
       @d.feed(@time, record)
     end
@@ -84,8 +84,8 @@ class MemcachedOutputTest < Test::Unit::TestCase
 
   def test_write
     @d = create_driver
-    record1 = {'name' => 'a', 'param1' => '1'}
-    record2 = {'name' => 'b', 'param1' => '2', 'param2' => '3'}
+    record1 = {'id' => 'a', 'field1' => '1'}
+    record2 = {'id' => 'b', 'field1' => '2', 'field2' => '3'}
     @d.run(default_tag: 'test') do
       @d.feed(@time, record1)
       @d.feed(@time, record2)
@@ -97,10 +97,10 @@ class MemcachedOutputTest < Test::Unit::TestCase
 
   def test_write_json
     d = create_driver(CONFIG_JSON)
-    record1 = {'name' => 'a', 'param1' => '4'}
-    record2 = {'name' => 'b', 'param1' => '5', 'param2' => '6'}
-    record1_value_json = {'name' => 'a', 'param1' => '4', 'tag' => 'test'}.to_json
-    record2_value_json = {'name' => 'b', 'param1' => '5', 'param2' => '6', 'tag' => 'test'}.to_json
+    record1 = {'id' => 'a', 'field1' => '4'}
+    record2 = {'id' => 'b', 'field1' => '5', 'field2' => '6'}
+    record1_value_json = {'id' => 'a', 'field1' => '4', 'tag' => 'test'}.to_json
+    record2_value_json = {'id' => 'b', 'field1' => '5', 'field2' => '6', 'tag' => 'test'}.to_json
     d.run(default_tag: 'test') do
       d.feed(@time, record1)
       d.feed(@time, record2)
@@ -112,10 +112,10 @@ class MemcachedOutputTest < Test::Unit::TestCase
 
   def test_write_increment
     d = create_driver(CONFIG_INCREMENT)
-    record1 = {'name' => 'count1', 'param_incr' => 1}
-    record2 = {'name' => 'count2', 'param_incr' => 2}
-    record3 = {'name' => 'count1', 'param_incr' => 3}
-    record4 = {'name' => 'count2', 'param_incr' => 4}
+    record1 = {'id' => 'count1', 'field_incr' => 1}
+    record2 = {'id' => 'count2', 'field_incr' => 2}
+    record3 = {'id' => 'count1', 'field_incr' => 3}
+    record4 = {'id' => 'count2', 'field_incr' => 4}
     d.run(default_tag: 'test') do
       d.feed(@time, record1)
       d.feed(@time, record2)
